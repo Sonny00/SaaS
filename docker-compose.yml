@@ -1,0 +1,36 @@
+version: "4"
+
+services:
+  frontend:
+    image: node:latest
+    working_dir: /usr/src/app
+    volumes:
+      - ./mental-health-saas-front:/usr/src/app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+
+  backend:
+    image: node:latest
+    working_dir: /usr/src/app
+    volumes:
+      - ./mental-health-backend:/usr/src/app
+    environment:
+      DATABASE_URL: ${DATABASE_URL} 
+    command: sh -c "npm install && npm run start"
+    ports:
+      - "8000:8000" 
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

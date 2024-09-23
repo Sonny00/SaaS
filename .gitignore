@@ -1,0 +1,33 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env
+
+# Test coverage
+coverage/
+*.lcov
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous
+*.tgz
+*.zip
+*.tar
