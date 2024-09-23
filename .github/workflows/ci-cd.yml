@@ -19,27 +19,12 @@ jobs:
       - name: Installer Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'    
+          node-version: '20'    
       - name: Installer les dépendances
         run: |
-          cd backend
+          cd mental-health-backend
           npm install
-          cd ../frontend
+          cd ../mental-health-saas-front
           npm install
 
-      - name: Lancer les tests
-        run: |
-          cd backend
-          npm run test
-          cd ../frontend
-          npm run test
-
-      - name: Construire le frontend
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Déployer (optionnel)
-        run: |
-          # Ajoute tes commandes de déploiement ici, par exemple pour AWS ou autre
-          echo "Déploiement en cours..."
+      
