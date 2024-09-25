@@ -1,3 +1,4 @@
+// datasource et générateur
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -8,8 +9,96 @@ generator client {
 }
 
 model User {
+  id                 Int                 @id @default(autoincrement())
+  email              String              @unique
+  name               String?
+  role               Role                @default(USER)
+  password           String
+  questionnaires     Questionnaire[]
+  responses          Response[]
+  relaxationSessions RelaxationSession[]
+  recommendations    Recommendation[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  Company            Company?            @relation(fields: [companyId], references: [id])
+  companyId          Int?
+}
+
+// Enum pour le rôle des utilisateurs (employé ou administrateur de l'entreprise)
+enum Role {
+  USER
+  ADMIN
+}
+
+// Modèle pour les questionnaires
+model Questionnaire {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  questions   Question[]
+  user        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  responses   Response[]
+  createdAt   DateTime   @default(now())
+}
+
+// Modèle pour les questions dans les questionnaires
+model Question {
+  id              Int           @id @default(autoincrement())
+  questionText    String
+  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id])
+  questionnaireId Int
+  responses       Response[]
+}
+
+// Modèle pour les réponses des utilisateurs aux questions
+model Response {
+  id              Int            @id @default(autoincrement())
+  answer          String
+  user            User           @relation(fields: [userId], references: [id])
+  userId          Int
+  question        Question       @relation(fields: [questionId], references: [id])
+  questionId      Int
+  createdAt       DateTime       @default(now())
+  Questionnaire   Questionnaire? @relation(fields: [questionnaireId], references: [id])
+  questionnaireId Int?
+}
+
+// Modèle pour les séances de relaxation
+model RelaxationSession {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  duration    Int // durée en minutes
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime @default(now())
+}
+
+// Modèle pour les recommandations personnalisées
+model Recommendation {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime @default(now())
+}
+
+model Analytics {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
+  report    Json // un rapport qui pourrait être structuré en JSON
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId Int
+}
+
+// Modèle pour les entreprises qui utilisent le SaaS
+model Company {
+  id        Int         @id @default(autoincrement())
+  name      String
+  employees User[]
+  analytics Analytics[]
+  createdAt DateTime    @default(now())
 }
