@@ -87,9 +87,8 @@ export default function LoginPage() {
           className="mt-8 text-center text-white text-shadow"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
         >
-       
         </motion.div>
       </motion.div>
     </div>
