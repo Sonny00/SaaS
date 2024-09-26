@@ -16,13 +16,39 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Ici, vous ajouteriez la logique de connexion
-    await new Promise(resolve => setTimeout(resolve, 2000)) // Simule une requête
-    setIsLoading(false)
+    setError('')
+
+    try {
+      // Appel API pour se connecter
+      const response = await fetch('http://localhost:8000/users/login', { // Remplace avec ton URL backend
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur de connexion, veuillez vérifier vos identifiants.')
+      }
+
+      const data = await response.json()
+
+      // Stocker le token JWT dans le localStorage
+      localStorage.setItem('token', data.access_token)
+
+      // Rediriger l'utilisateur après une connexion réussie (par exemple vers le dashboard)
+      window.location.href = '/dashboard'
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -40,6 +66,7 @@ export default function LoginPage() {
           <div className="p-8">
             <h2 className="text-3xl font-bold text-center mb-6 text-[#0a3d62]">Bienvenue chez MindfulWork</h2>
             <p className="text-center text-[#3c6382] mb-8">Votre espace de bien-être au travail</p>
+            {error && <p className="text-red-500 text-center">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-[#3c6382]">Email</label>

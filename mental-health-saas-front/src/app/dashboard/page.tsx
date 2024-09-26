@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Poppins } from 'next/font/google'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Activity, Brain, Users, Calendar, BarChart2, Settings, Home, FileText, MessageCircle, HelpCircle, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -44,11 +45,25 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 export default function Dashboard() {
   const [wellbeingScore, setWellbeingScore] = useState(75)
 
+  const router = useRouter();
+  
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/'); // Rediriger si l'utilisateur n'est pas connecté
+    }
+  }, [router]);
+
+   const handleLogout = () => {
+    localStorage.removeItem('token'); 
+    router.push('/'); 
+  }
+
   return (
     <div className={`min-h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className} flex`}>
       {/* Barre de navigation latérale */}
       <nav className="w-64 bg-[#0a3d62] text-white p-6 space-y-6">
-        <div className="text-2xl font-bold mb-8">MindfulWork</div>
+        <div className="text-2xl font-bold mb-8">[Name]</div>
         <ul className="space-y-4">
           <li>
             <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
@@ -82,7 +97,9 @@ export default function Dashboard() {
           </li>
         </ul>
         <div className="mt-auto pt-6">
-          <Button variant="outline" className="w-full text-white border-white hover:bg-white/10">
+          <Button variant="outline" className="w-full text-white border-white hover:bg-white/10"
+                      onClick={handleLogout} 
+>
             <LogOut className="mr-2 h-4 w-4" /> Déconnexion
           </Button>
         </div>
