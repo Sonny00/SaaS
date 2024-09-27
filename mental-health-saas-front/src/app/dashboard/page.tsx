@@ -49,7 +49,7 @@ export default function Dashboard() {
   
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    if (token) {
       router.push('/'); // Rediriger si l'utilisateur n'est pas connecté
     }
   }, [router]);
@@ -72,19 +72,19 @@ export default function Dashboard() {
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
+            <a href="/Statistics" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
               <Activity className="h-5 w-5" />
               <span>Statistiques</span>
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
+            <a href="/dashboard/Reports" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
               <FileText className="h-5 w-5" />
               <span>Rapports</span>
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
+            <a href="/messages" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
               <MessageCircle className="h-5 w-5" />
               <span>Messages</span>
             </a>

@@ -8,6 +8,8 @@ import { Button } from "./ui/button"
 import { Progress } from "./ui/progress"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Activity, Brain, Users, Calendar, BarChart2, Settings, Home, FileText, MessageCircle, HelpCircle, LogOut } from 'lucide-react'
+import Link from 'next/link'
+
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -63,10 +65,12 @@ export function DashboardComponent() {
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
+          <Link href="/dashboard/report">
+            <a  className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
               <FileText className="h-5 w-5" />
               <span>Rapports</span>
             </a>
+            </Link>
           </li>
           <li>
             <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">

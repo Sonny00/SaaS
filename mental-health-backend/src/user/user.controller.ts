@@ -22,3 +22,5 @@ export class UserController {
     return this.userService.login(user);
   }
 }
+
+}
