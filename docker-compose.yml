@@ -1,5 +1,4 @@
-version: "4"
-
+version: "3.8"
 services:
   frontend:
     image: node:latest
@@ -8,7 +7,7 @@ services:
       - ./mental-health-saas-front:/usr/src/app
     command: sh -c "npm install && npm run dev"
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
 
   backend:
     image: node:latest
@@ -16,30 +15,43 @@ services:
     volumes:
       - ./mental-health-backend:/usr/src/app
     environment:
-      DATABASE_URL: ${DATABASE_URL} 
-    command: sh -c "npm install && npm run start"
+      DATABASE_URL: "${MONGODB_URL}"
+    command: sh -c "npm install && npx prisma generate && npm run start"
     ports:
-      - "8000:8000" 
+      - "${BACKEND_PORT}:${BACKEND_PORT}" 
     depends_on:
-      - db
+      - mongo
 
-  db:
-    image: postgres:latest
+  mongo:
+    image: mongo:latest
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./mongo-keyfile:/data/mongo-keyfile:ro
+    command: ["mongod", "--replSet", "rs0", "--keyFile", "/data/mongo-keyfile"]
     ports:
-      - "5432:5432"
+      - "${MONGO_PORT}:${MONGO_PORT}"
 
-  adminer:
-    image: adminer
-    ports:
-      - "8080:8080"
+  mongo_setup:
+    image: mongo:latest
     depends_on:
-      - db
+      - mongo
+    command: >
+      sh -c "
+        sleep 50;  # Augmente le temps de sommeil
+        mongosh --host mongo --username root --password prisma --eval 'rs.initiate({_id: \"rs0\", members: [{ _id: 0, host: \"mongo:27017\" }]})'
+      "
+
+  mongo_express:
+    image: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}"
 
 volumes:
-  postgres_data:
+  mongodb_data:

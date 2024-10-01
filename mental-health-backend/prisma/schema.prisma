@@ -1,15 +1,15 @@
-// datasource et générateur
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
   email              String              @unique
   name               String?
   role               Role                @default(USER)
@@ -20,83 +20,78 @@ model User {
   recommendations    Recommendation[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  companyId          String?             @db.ObjectId
   Company            Company?            @relation(fields: [companyId], references: [id])
-  companyId          Int?
+
+  @@map("users")
 }
 
-// Enum pour le rôle des utilisateurs (employé ou administrateur de l'entreprise)
 enum Role {
   USER
   ADMIN
 }
 
-// Modèle pour les questionnaires
 model Questionnaire {
-  id          Int        @id @default(autoincrement())
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   questions   Question[]
+  userId      String     @db.ObjectId
   user        User       @relation(fields: [userId], references: [id])
-  userId      Int
   responses   Response[]
   createdAt   DateTime   @default(now())
 }
 
-// Modèle pour les questions dans les questionnaires
 model Question {
-  id              Int           @id @default(autoincrement())
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
   questionText    String
+  questionnaireId String        @db.ObjectId
   questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id])
-  questionnaireId Int
   responses       Response[]
 }
 
-// Modèle pour les réponses des utilisateurs aux questions
 model Response {
-  id              Int            @id @default(autoincrement())
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
   answer          String
+  userId          String         @db.ObjectId
   user            User           @relation(fields: [userId], references: [id])
-  userId          Int
+  questionId      String         @db.ObjectId
   question        Question       @relation(fields: [questionId], references: [id])
-  questionId      Int
-  createdAt       DateTime       @default(now())
+  questionnaireId String?        @db.ObjectId
   Questionnaire   Questionnaire? @relation(fields: [questionnaireId], references: [id])
-  questionnaireId Int?
+  createdAt       DateTime       @default(now())
 }
 
-// Modèle pour les séances de relaxation
 model RelaxationSession {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   duration    Int // durée en minutes
+  userId      String   @db.ObjectId
   user        User     @relation(fields: [userId], references: [id])
-  userId      Int
   createdAt   DateTime @default(now())
 }
 
-// Modèle pour les recommandations personnalisées
 model Recommendation {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
+  userId      String   @db.ObjectId
   user        User     @relation(fields: [userId], references: [id])
-  userId      Int
   createdAt   DateTime @default(now())
 }
 
 model Analytics {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   report    Json // un rapport qui pourrait être structuré en JSON
+  companyId String   @db.ObjectId
+  company   Company  @relation(fields: [companyId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  company   Company  @relation(fields: [companyId], references: [id])
-  companyId Int
 }
 
-// Modèle pour les entreprises qui utilisent le SaaS
 model Company {
-  id        Int         @id @default(autoincrement())
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   employees User[]
   analytics Analytics[]

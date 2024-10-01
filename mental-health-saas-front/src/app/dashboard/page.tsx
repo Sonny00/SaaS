@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui
 import { Button } from "../../../components/ui/button"
 import { Progress } from "../../../components/ui/progress"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { Activity, Brain, Users, Calendar, BarChart2, Settings, Home, FileText, MessageCircle, HelpCircle, LogOut } from 'lucide-react'
+import { FileQuestion, Activity, Brain, Users, Calendar, BarChart2, Settings, Home, FileText, MessageCircle, HelpCircle, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation';
 
 const poppins = Poppins({
@@ -72,7 +72,7 @@ export default function Dashboard() {
             </a>
           </li>
           <li>
-            <a href="/Statistics" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
+            <a href="/reports" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
               <Activity className="h-5 w-5" />
               <span>Statistiques</span>
             </a>
@@ -89,12 +89,20 @@ export default function Dashboard() {
               <span>Messages</span>
             </a>
           </li>
+           <li>
+              <a href="/questionnaires" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
+              <FileQuestion className="h-5 w-5" />
+               <span>Questionnaire</span>
+            </a>
+          </li>
           <li>
             <a href="#" className="flex items-center space-x-2 hover:text-[#82ccdd] transition-colors">
               <HelpCircle className="h-5 w-5" />
               <span>Aide</span>
             </a>
           </li>
+           
+
         </ul>
         <div className="mt-auto pt-6">
           <Button variant="outline" className="w-full text-white border-white hover:bg-white/10"

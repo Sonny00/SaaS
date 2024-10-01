@@ -1,0 +1,6 @@
+exit
+rs.initiate()
+exit
+docker-compose down
+rs.initiate()
+rs.status()

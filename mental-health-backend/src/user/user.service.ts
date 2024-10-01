@@ -10,14 +10,13 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async createUser(email: string, password: string, name?: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+ async createUser(email: string, password: string, name?: string) {
+    const existingUser = await this.findByEmail(email);
     if (existingUser) {
-      throw new ConflictException('User already exists');
+      throw new ConflictException('Un utilisateur avec cet email existe déjà.');
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     return this.prisma.user.create({
       data: {

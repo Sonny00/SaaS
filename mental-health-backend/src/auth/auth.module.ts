@@ -3,18 +3,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../user/user.module'; 
-import { JwtStrategy } from './jwt.strategy'; // Ta stratégie JWT
-
+import { JwtStrategy } from './jwt.strategy';
+import { LocalStrategy } from './local.strategy';
 @Module({
   imports: [
-    UsersModule, // Si tu as besoin d'un module pour gérer les utilisateurs
+    UsersModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET, // Assure-toi d'avoir configuré cette variable d'environnement
-      signOptions: { expiresIn: '1h' }, // Durée de validité des tokens
+      secret: process.env.JWT_SECRET, 
+      signOptions: { expiresIn: '1h' }, 
     }),
+    
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy,LocalStrategy],
   controllers: [AuthController],
-  exports: [AuthService], // Si d'autres modules doivent accéder à AuthService
+  exports: [AuthService], 
 })
 export class AuthModule {}
