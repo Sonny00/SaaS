@@ -24,8 +24,8 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Appel API pour se connecter
-      const response = await fetch('http://localhost:8000/users/login', { // Remplace avec ton URL backend
+   
+      const response = await fetch('http://localhost:8000/auth/login', { // Remplace avec ton URL backend
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

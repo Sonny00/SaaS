@@ -15,7 +15,7 @@ const poppins = Poppins({
   weight: ['400', '500', '600', '700'],
 })
 
-// Données simulées pour les graphiques
+
 const wellbeingTrend = [
   { month: 'Jan', score: 65 }, { month: 'Feb', score: 68 }, { month: 'Mar', score: 75 },
   { month: 'Apr', score: 72 }, { month: 'May', score: 80 }, { month: 'Jun', score: 78 }
