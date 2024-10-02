@@ -58,12 +58,12 @@ const navItems = [
   { name: 'Aide', href: '/help', icon: HelpCircle },
 ]
 
-const dispatch = useDispatch() // Initialiser useDispatch
+const dispatch = useDispatch() 
   const router = useRouter();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    dispatch(logoutAction()); // Dispatch de l'action logout
+    dispatch(logoutAction());
     router.push("/");
   };
 

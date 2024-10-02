@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { Poppins } from "next/font/google";
 import {
@@ -92,6 +92,7 @@ export default function Dashboard() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch()
+  const { isAuthenticated } = useSelector((state: any) => state.auth);
 
   const handleLogout = () => {
   console.log("Déconnexion en cours..."); // Debug
@@ -99,7 +100,17 @@ export default function Dashboard() {
   dispatch(logout());
     console.log("État après déconnexion :");
     router.push('/'); 
-};
+  };
+  
+    useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) {
+    return <div>Redirection...</div>;
+  }
 
   return (
     <div className={`flex h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className}`}>
