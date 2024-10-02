@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState} from 'react'
 import { motion } from 'framer-motion'
 import { Poppins } from 'next/font/google'
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
@@ -12,6 +12,9 @@ import Link from 'next/link'
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { usePathname } from 'next/navigation'
+import { logout as logoutAction }
+import { useDispatch } from 'react-redux' 
+import { useRouter } from 'next/navigation';
 
 
 
@@ -55,9 +58,21 @@ const navItems = [
   { name: 'Aide', href: '/help', icon: HelpCircle },
 ]
 
+const dispatch = useDispatch() // Initialiser useDispatch
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    dispatch(logoutAction()); // Dispatch de l'action logout
+    router.push("/");
+  };
+
+  
+
 export function DashboardComponent() {
   const [wellbeingScore, setWellbeingScore] = useState(75)
   const pathname = usePathname()
+
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className} flex`}>
@@ -89,7 +104,7 @@ export function DashboardComponent() {
           </ul>
         </ScrollArea>
         <div className="mt-auto pt-6">
-          <Button variant="outline" className="w-full text-white border-white hover:bg-white/10">
+          <Button variant="outline" className="w-full text-white border-white hover:bg-white/10"  onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" /> Déconnexion
           </Button>
         </div>

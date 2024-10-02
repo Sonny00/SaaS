@@ -1,62 +1,89 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Input } from "../../../components/ui/input"
-import { Button } from "../../../components/ui/button"
-import { Loader2 } from "lucide-react"
-import { Poppins } from 'next/font/google'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Input } from "../../../components/ui/input";
+import { Button } from "../../../components/ui/button";
+import { Loader2 } from "lucide-react";
+import { Poppins } from 'next/font/google';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../../store/slices/authSlice'; // Assurez-vous que le chemin d'importation est correct
+import { RootState } from '@/store/store';
+import { useRouter } from 'next/navigation';
+import { logout } from '@/store/slices/authSlice'
+
 
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-})
+});
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const router = useRouter();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard'); 
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
     try {
-   
-      const response = await fetch('http://localhost:8000/auth/login', { // Remplace avec ton URL backend
+      const response = await fetch('http://localhost:8000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Erreur de connexion, veuillez vérifier vos identifiants.')
+        throw new Error('Erreur de connexion, veuillez vérifier vos identifiants.');
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
-      // Stocker le token JWT dans le localStorage
-      localStorage.setItem('token', data.access_token)
+      // Assurez-vous que les données utilisateur sont présentes avant de les dispatcher
+      if (data.user) {
+        dispatch(login({ 
+          accessToken: data.access_token,
+          user: data.user
+        }));
+      } else {
+        throw new Error('Données utilisateur manquantes.');
+      }
 
-      // Rediriger l'utilisateur après une connexion réussie (par exemple vers le dashboard)
-      window.location.href = '/dashboard'
+      // Optionnel : Stocker le token JWT dans le localStorage
+      localStorage.setItem('token', data.access_token);
+
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
+  if (isAuthenticated) {
+    return <p>Redirection en cours...</p>;
+  }
+  
   return (
-    <div 
+    <div
       className={`min-h-screen flex items-center justify-center p-4 bg-cover bg-center ${poppins.className}`}
       style={{ backgroundImage: "url('/images/Login_image.png')" }}
     >
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -116,8 +143,9 @@ export default function LoginPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.3 }}
         >
+          {/* Contenu supplémentaire si nécessaire */}
         </motion.div>
       </motion.div>
     </div>
-  )
+  );
 }

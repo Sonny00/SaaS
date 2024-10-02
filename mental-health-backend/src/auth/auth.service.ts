@@ -17,8 +17,15 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { username: user.username, sub: user.userId };
+
+    // Renvoyer les informations de l'utilisateur avec le token
     return {
-      access_token: this.jwtService.sign(payload),
+    access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id, // Renvoie l'id de l'utilisateur
+        email: user.email, // Inclut l'email de l'utilisateur
+        name: user.name,
+      },
     };
   }
 
@@ -37,3 +44,4 @@ export class AuthService {
     this.loginAttempts[email] = 0;
   }
 }
+  

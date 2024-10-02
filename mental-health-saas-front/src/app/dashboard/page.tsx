@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import { Poppins } from "next/font/google";
 import {
@@ -44,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { logout } from "../../store/slices/authSlice";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -89,11 +91,15 @@ export default function Dashboard() {
   const [wellbeingScore, setWellbeingScore] = useState(75);
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useDispatch()
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/");
-  };
+  console.log("Déconnexion en cours..."); // Debug
+  localStorage.removeItem("token");
+  dispatch(logout());
+    console.log("État après déconnexion :");
+    router.push('/'); 
+};
 
   return (
     <div className={`flex h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className}`}>

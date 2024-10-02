@@ -31,10 +31,10 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { email } });
   }
     
-  async validateUser(email: string, password: string): Promise<any> {
+   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.findByEmail(email);
     if (user && await bcrypt.compare(password, user.password)) {
-      const { password, ...result } = user;
+      const { password, ...result } = user; 
       return result;
     }
     return null;
