@@ -1,22 +1,16 @@
 "use client"
 
-import { useState} from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { Poppins } from 'next/font/google'
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
-import { Button } from "./ui/button"
-import { Progress } from "./ui/progress"
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Activity, Brain, Users, Calendar, BarChart2, Settings, Home, FileText, MessageCircle, HelpCircle, LogOut } from 'lucide-react'
-import Link from 'next/link'
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { usePathname } from 'next/navigation'
-import { logout as logoutAction }
-import { useDispatch } from 'react-redux' 
-import { useRouter } from 'next/navigation';
-
-
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -58,26 +52,14 @@ const navItems = [
   { name: 'Aide', href: '/help', icon: HelpCircle },
 ]
 
-const dispatch = useDispatch() 
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    dispatch(logoutAction());
-    router.push("/");
-  };
-
-  
-
-export function DashboardComponent() {
+export function DashboardComponentComponent() {
   const [wellbeingScore, setWellbeingScore] = useState(75)
   const pathname = usePathname()
 
-
   return (
     <div className={`min-h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className} flex`}>
-      {/* Barre de navigation latérale */}
-     <nav className="w-64 bg-gradient-to-b from-[#0a3d62] to-[#0c2461] text-white p-6 flex flex-col h-screen">
+      {/* Navigation sidebar - always visible */}
+      <nav className="w-64 bg-gradient-to-b from-[#0a3d62] to-[#0c2461] text-white p-6 flex flex-col h-screen">
         <div className="text-2xl font-bold mb-8 flex items-center">
           <Brain className="h-8 w-8 mr-2" />
           MindfulWork
@@ -104,18 +86,18 @@ export function DashboardComponent() {
           </ul>
         </ScrollArea>
         <div className="mt-auto pt-6">
-          <Button variant="outline" className="w-full text-white border-white hover:bg-white/10"  onClick={handleLogout}>
+          <Button variant="outline" className="w-full text-white border-white hover:bg-white/10">
             <LogOut className="mr-2 h-4 w-4" /> Déconnexion
           </Button>
         </div>
       </nav>
 
-      {/* Contenu principal */}
+      {/* Main content */}
       <div className="flex-1 p-6 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <header className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-[#0a3d62]">Tableau de bord</h1>
-            <Button variant="outline" className="bg-white/50 hover:bg-white/70">
+            <h1 className="text-3xl font-bold text-white">Tableau de bord</h1>
+            <Button variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white">
               <Settings className="mr-2 h-4 w-4" /> Paramètres
             </Button>
           </header>

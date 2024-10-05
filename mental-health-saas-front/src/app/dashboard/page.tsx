@@ -45,7 +45,8 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { logout } from "../../store/slices/authSlice";
+import { logout } from "../../store/slices/authSlice"; // Import du logout
+import LoadingTransition from "@/components/loading";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -80,7 +81,7 @@ const mockActivitiesData = [
 const navItems = [
   { name: "Accueil", href: "/", icon: Home },
   { name: "Statistiques", href: "/statistics", icon: Activity },
-  { name: "Rapports", href: "/dashboard/Reports", icon: FileText },
+  { name: "Rapports", href: "/dashboard/rapports", icon: FileText },
   { name: "Messages", href: "/messages", icon: MessageCircle },
   { name: "Aide", href: "/help", icon: HelpCircle },
 ];
@@ -91,30 +92,29 @@ export default function Dashboard() {
   const [wellbeingScore, setWellbeingScore] = useState(75);
   const pathname = usePathname();
   const router = useRouter();
-  const dispatch = useDispatch()
-  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: any) => state.auth); // Vérification de l'authentification
 
   const handleLogout = () => {
-  console.log("Déconnexion en cours..."); // Debug
-  localStorage.removeItem("token");
-  dispatch(logout());
-    console.log("État après déconnexion :");
-    router.push('/'); 
+    console.log("Déconnexion en cours...");
+    localStorage.removeItem("token"); // Suppression du token
+    dispatch(logout()); // Dispatch de l'action de déconnexion
+    router.push('/'); // Redirection vers la page d'accueil
   };
-  
-    useEffect(() => {
+
+  useEffect(() => {
     if (!isAuthenticated) {
       router.push("/");
     }
   }, [isAuthenticated, router]);
 
   if (!isAuthenticated) {
-    return <div>Redirection...</div>;
+    return <LoadingTransition />;
   }
 
   return (
     <div className={`flex h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className}`}>
-      {/* Navigation sidebar - always visible and full height */}
+      {/* Navigation sidebar */}
       <nav className="w-64 bg-gradient-to-b from-[#0a3d62] to-[#0c2461] text-white flex flex-col h-full">
         <div className="p-6 flex flex-col h-full">
           <div className="text-2xl font-bold mb-8 flex items-center">
@@ -157,9 +157,7 @@ export default function Dashboard() {
         <div className="h-full overflow-auto p-6">
           <div className="max-w-7xl mx-auto space-y-8">
             <header className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold text-[#0a3d62]">
-                Tableau de bord
-              </h1>
+              <h1 className="text-3xl font-bold text-[#0a3d62]">Tableau de bord</h1>
               <Button variant="outline" className="bg-white/50 hover:bg-white/70">
                 <Settings className="mr-2 h-4 w-4" /> Paramètres
               </Button>
@@ -174,9 +172,7 @@ export default function Dashboard() {
                   <Activity className="h-4 w-4 text-[#0a3d62]" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-[#0a3d62]">
-                    {wellbeingScore}/100
-                  </div>
+                  <div className="text-2xl font-bold text-[#0a3d62]">{wellbeingScore}/100</div>
                   <Progress value={wellbeingScore} className="mt-2" />
                 </CardContent>
               </Card>
@@ -189,9 +185,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-[#0a3d62]">12</div>
-                  <p className="text-xs text-[#3c6382]">
-                    +2 depuis la semaine dernière
-                  </p>
+                  <p className="text-xs text-[#3c6382]">+2 depuis la semaine dernière</p>
                 </CardContent>
               </Card>
               <Card className="bg-white/80 backdrop-blur-md">
@@ -214,53 +208,84 @@ export default function Dashboard() {
                   <Calendar className="h-4 w-4 text-[#0a3d62]" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-[#0a3d62]">
-                    Demain, 14h
-                  </div>
+                  <div className="text-2xl font-bold text-[#0a3d62]">Demain, 14h</div>
                   <p className="text-xs text-[#3c6382]">Méditation guidée</p>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Graphiques */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle className="text-[#0a3d62]">
-                    Évolution du bien-être
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-[#3c6382]">
+                    Bien-être sur la semaine
                   </CardTitle>
+                  <BarChart2 className="h-4 w-4 text-[#0a3d62]" />
                 </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                <CardContent className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={mockWellbeingData}>
-                      <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="day" />
                       <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" />
                       <Tooltip />
-                      <Bar dataKey="score" fill="#3c6382" />
+                      <Bar dataKey="score" fill="#82ca9d" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+
               <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle className="text-[#0a3d62]">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-[#3c6382]">
                     Niveaux de stress
                   </CardTitle>
+                  <Activity className="h-4 w-4 text-[#0a3d62]" />
                 </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                <CardContent className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={mockStressLevels}>
-                      <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" />
                       <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="niveau"
-                        stroke="#3c6382"
-                        strokeWidth={2}
-                      />
+                      <Line type="monotone" dataKey="niveau" stroke="#8884d8" />
                     </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
+              <Card className="bg-white/80 backdrop-blur-md">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-[#3c6382]">
+                    Activités bien-être
+                  </CardTitle>
+                  <FileQuestion className="h-4 w-4 text-[#0a3d62]" />
+                </CardHeader>
+                <CardContent className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={mockActivitiesData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label
+                      >
+                        {mockActivitiesData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>

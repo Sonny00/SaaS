@@ -11,6 +11,7 @@ import { login } from '../../store/slices/authSlice'; // Assurez-vous que le che
 import { RootState } from '@/store/store';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/store/slices/authSlice'
+import LoadingTransition from '../../components/loading'; 
 
 
 const poppins = Poppins({
@@ -75,9 +76,9 @@ export default function LoginPage() {
   };
 
   if (isAuthenticated) {
-    return <p>Redirection en cours...</p>;
+    return  <LoadingTransition /> ;
   }
-  
+
   return (
     <div
       className={`min-h-screen flex items-center justify-center p-4 bg-cover bg-center ${poppins.className}`}
