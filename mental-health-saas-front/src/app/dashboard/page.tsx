@@ -47,6 +47,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { logout } from "../../store/slices/authSlice"; // Import du logout
 import LoadingTransition from "@/components/loading";
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -81,7 +82,8 @@ const mockActivitiesData = [
 const navItems = [
   { name: "Accueil", href: "/", icon: Home },
   { name: "Statistiques", href: "/statistics", icon: Activity },
-  { name: "Rapports", href: "/dashboard/rapports", icon: FileText },
+  { name: "Rapports", href: "/rapports", icon: FileText },
+  { name: "Questionnaires", href: "/management", icon: QuestionMarkCircledIcon },
   { name: "Messages", href: "/messages", icon: MessageCircle },
   { name: "Aide", href: "/help", icon: HelpCircle },
 ];

@@ -12,6 +12,8 @@ import { RootState } from '@/store/store';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/store/slices/authSlice'
 import LoadingTransition from '../../components/loading'; 
+import Typed from 'react-typed'; 
+
 
 
 const poppins = Poppins({
@@ -92,7 +94,8 @@ export default function LoginPage() {
       >
         <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
-            <h2 className="text-3xl font-bold text-center mb-6 text-[#0a3d62]">Bienvenue chez [NomApp]</h2>
+            <h2 className="text-3xl font-bold text-center mb-6 text-[#0a3d62]">Bienvenue chez
+              Mindful Work</h2>
             <p className="text-center text-[#3c6382] mb-8">Votre espace de bien-être au travail</p>
             {error && <p className="text-red-500 text-center">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -134,8 +137,8 @@ export default function LoginPage() {
             </form>
           </div>
           <div className="px-8 py-4 bg-[#f0f8ff]/80 border-t border-[#82ccdd] flex justify-between items-center">
-            <a href="#" className="text-sm text-[#3c6382] hover:underline">Mot de passe oublié ?</a>
-            <a href="#" className="text-sm text-[#3c6382] hover:underline">Créer un compte</a>
+            <a href="/forgot-password" className="text-sm text-[#3c6382] hover:underline">Mot de passe oublié ?</a>
+            <a href="/creation-account" className="text-sm text-[#3c6382] hover:underline">Créer un compte</a>
           </div>
         </div>
         <motion.div
