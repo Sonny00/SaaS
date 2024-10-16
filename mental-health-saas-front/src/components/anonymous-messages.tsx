@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Search, Filter, MessageCircle, AlertTriangle, CheckCircle2, FileDown } from 'lucide-react'
+import { ArrowLeft, Search, MessageCircle, FileDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { jsPDF } from "jspdf"
 import "jspdf-autotable"

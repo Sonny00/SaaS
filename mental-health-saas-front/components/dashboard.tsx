@@ -47,9 +47,10 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 const navItems = [
   { name: 'Accueil', href: '/', icon: Home },
   { name: 'Statistiques', href: '/statistics', icon: Activity },
-  { name: 'Rapports', href: '/dashboard/report', icon: FileText },
+  { name: 'Rapports', href: '/rapports', icon: FileText },
   { name: 'Messages', href: '/messages', icon: MessageCircle },
   { name: 'Aide', href: '/help', icon: HelpCircle },
+
 ]
 
 export function DashboardComponentComponent() {

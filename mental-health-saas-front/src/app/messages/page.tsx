@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Poppins } from 'next/font/google'
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Search, Filter, MessageCircle, AlertTriangle, CheckCircle2, FileDown } from 'lucide-react'
+import { ArrowLeft, Search, MessageCircle, FileDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { jsPDF } from "jspdf"
 import "jspdf-autotable"
@@ -21,7 +21,7 @@ const poppins = Poppins({
   weight: ['400', '500', '600', '700'],
 })
 
-// Données simulées pour les messages
+// Simulated data for messages
 const initialMessages = [
   { id: 1, subject: "Problème de communication", content: "Je ressens un manque de communication au sein de l'équipe...", date: "2023-09-15", status: "Non traité", priority: "Moyenne" },
   { id: 2, subject: "Suggestion d'amélioration", content: "J'ai une idée pour améliorer notre processus de...", date: "2023-09-16", status: "En cours", priority: "Basse" },
@@ -30,7 +30,7 @@ const initialMessages = [
   { id: 5, subject: "Stress au travail", content: "Je trouve que la charge de travail est devenue...", date: "2023-09-19", status: "Non traité", priority: "Moyenne" },
 ]
 
-export default function AnonymousMessages() {
+export default function Component() {
   const router = useRouter()
   const [messages, setMessages] = useState(initialMessages)
   const [searchTerm, setSearchTerm] = useState('')
@@ -81,6 +81,14 @@ export default function AnonymousMessages() {
     )
   }
 
+  const toggleAllMessages = () => {
+    if (selectedMessages.length === filteredMessages.length) {
+      setSelectedMessages([])
+    } else {
+      setSelectedMessages(filteredMessages.map(message => message.id))
+    }
+  }
+
   const exportToPDF = () => {
     const doc = new jsPDF()
     const tableColumn = ["Sujet", "Date", "Statut", "Priorité", "Contenu"]
@@ -110,14 +118,14 @@ export default function AnonymousMessages() {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className} p-6`}>
-      <Card className="max-w-6xl mx-auto bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden">
+      <Card className="max-w-6xl mx-auto bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl">
         <CardHeader className="flex flex-col space-y-4">
           <div className="flex justify-between items-center">
             <Button
               onClick={goBack}
               variant="outline"
               size="sm"
-              className="bg-white/50 hover:bg-white/70 rounded-full"
+              className="bg-white/50 hover:bg-white/70 rounded-full transition-colors duration-200 ease-in-out transform hover:scale-105"
             >
               <ArrowLeft className="mr-1 h-4 w-4" /> Retour
             </Button>
@@ -125,13 +133,13 @@ export default function AnonymousMessages() {
               onClick={exportToPDF}
               variant="outline"
               size="sm"
-              className="bg-white/50 hover:bg-white/70 rounded-full"
+              className="bg-white/50 hover:bg-white/70 rounded-full transition-colors duration-200 ease-in-out transform hover:scale-105"
               disabled={selectedMessages.length === 0}
             >
               <FileDown className="mr-1 h-4 w-4" /> Exporter la sélection en PDF
             </Button>
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-[#0a3d62]">Messages Anonymes des Employés</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-[#0a3d62] transition-all duration-300 ease-in-out hover:text-[#1e3799]">Messages Anonymes des Employés</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -142,12 +150,12 @@ export default function AnonymousMessages() {
                   placeholder="Rechercher un message..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 rounded-full"
+                  className="pl-10 rounded-full transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-400"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] rounded-full">
+                <SelectTrigger className="w-[180px] rounded-full transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-400">
                   <SelectValue placeholder="Filtrer par statut" />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,7 +167,7 @@ export default function AnonymousMessages() {
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-[180px] rounded-full">
+                <SelectTrigger className="w-[180px] rounded-full transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-400">
                   <SelectValue placeholder="Filtrer par priorité" />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,7 +182,13 @@ export default function AnonymousMessages() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">Sélectionner</TableHead>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={selectedMessages.length === filteredMessages.length}
+                      onCheckedChange={toggleAllMessages}
+                      className="transition-all duration-200 ease-in-out hover:scale-110"
+                    />
+                  </TableHead>
                   <TableHead>Sujet</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Statut</TableHead>
@@ -184,29 +198,35 @@ export default function AnonymousMessages() {
               </TableHeader>
               <TableBody>
                 {filteredMessages.map((message) => (
-                  <TableRow key={message.id}>
+                  <TableRow key={message.id} className="transition-all duration-200 ease-in-out hover:bg-gray-100">
                     <TableCell>
                       <Checkbox
                         checked={selectedMessages.includes(message.id)}
                         onCheckedChange={() => toggleMessageSelection(message.id)}
+                        className="transition-all duration-200 ease-in-out hover:scale-110"
                       />
                     </TableCell>
                     <TableCell>{message.subject}</TableCell>
                     <TableCell>{message.date}</TableCell>
                     <TableCell>
-                      <Badge className={`${getStatusColor(message.status)} text-white`}>
+                      <Badge className={`${getStatusColor(message.status)} text-white transition-all duration-200 ease-in-out hover:opacity-80`}>
                         {message.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={`${getPriorityColor(message.priority)} text-white`}>
+                      <Badge className={`${getPriorityColor(message.priority)} text-white transition-all duration-200 ease-in-out hover:opacity-80`}>
                         {message.priority}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => setSelectedMessage(message)}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 hover:bg-blue-100" 
+                            onClick={() => setSelectedMessage(message)}
+                          >
                             <MessageCircle className="mr-1 h-4 w-4" /> Voir
                           </Button>
                         </DialogTrigger>
@@ -224,7 +244,7 @@ export default function AnonymousMessages() {
                                 value={selectedMessage?.status} 
                                 onValueChange={(value) => handleStatusChange(selectedMessage.id, value)}
                               >
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger className="w-[180px] transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-400">
                                   <SelectValue placeholder="Changer le statut" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -234,14 +254,17 @@ export default function AnonymousMessages() {
                                   <SelectItem value="Traité">Traité</SelectItem>
                                 </SelectContent>
                               </Select>
-                              <Badge className={`${getPriorityColor(selectedMessage?.priority)} text-white`}>
+                              <Badge className={`${getPriorityColor(selectedMessage?.priority)} text-white transition-all duration-200 ease-in-out hover:opacity-80`}>
                                 {selectedMessage?.priority}
                               </Badge>
                             </div>
-                            <Textarea placeholder="Ajouter une note ou une réponse..." />
+                            <Textarea 
+                              placeholder="Ajouter une note ou une réponse..." 
+                              className="transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-400"
+                            />
                             <div className="flex justify-end space-x-2">
-                              <Button variant="outline">Fermer</Button>
-                              <Button>Enregistrer</Button>
+                              <Button variant="outline" className="transition-all duration-200 ease-in-out hover:bg-gray-100">Fermer</Button>
+                              <Button className="transition-all duration-200 ease-in-out hover:bg-blue-600">Enregistrer</Button>
                             </div>
                           </div>
                         </DialogContent>
