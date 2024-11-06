@@ -1,81 +1,112 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Poppins } from 'next/font/google'
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { Plus, Send, Trash2, ArrowLeft, User, Users, Mail, Search } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react';
+import { Poppins } from 'next/font/google';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Plus, Send, Trash2, ArrowLeft, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { addEmployeeApi, fetchEmployeesApi, deleteEmployeeApi } from '../../lib/apiClients';  // Import des fonctions API
 
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-})
+});
 
 const quizzes = [
   { id: 1, name: "Quiz sur le bien-être au travail" },
   { id: 2, name: "Évaluation du stress" },
   { id: 3, name: "Satisfaction au travail" },
-]
+];
 
 export default function EnhancedEmployeeManagement() {
-  const [employees, setEmployees] = useState<{ id: number; email: string; selected: boolean }[]>([])
-  const [newEmail, setNewEmail] = useState('')
-  const [selectedQuiz, setSelectedQuiz] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const router = useRouter()
+  const [employees, setEmployees] = useState([]);
+  const [newEmail, setNewEmail] = useState('');
+  const [selectedQuiz, setSelectedQuiz] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
-  const addEmployee = () => {
-    if (newEmail && !employees.some(emp => emp.email === newEmail)) {
-      setEmployees([...employees, { id: Date.now(), email: newEmail, selected: false }])
-      setNewEmail('')
-      toast.success('Employé ajouté avec succès')
-    } else {
-      toast.error('Email invalide ou déjà existant')
+  const addEmployee = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!newEmail.match(emailRegex)) {
+      toast.error("Veuillez entrer une adresse e-mail valide");
+      return;
     }
-  }
 
-  const toggleEmployeeSelection = (id: number) => {
-    setEmployees(employees.map(emp => 
-      emp.id === id ? { ...emp, selected: !emp.selected } : emp
-    ))
-  }
-
-  const deleteEmployee = (id: number) => {
-    setEmployees(employees.filter(emp => emp.id !== id))
-    toast.info('Employé supprimé')
-  }
-
-  const sendQuiz = () => {
-    const selectedEmployees = employees.filter(emp => emp.selected)
-    if (selectedEmployees.length > 0 && selectedQuiz) {
-      console.log(`Envoi du quiz ${selectedQuiz} aux employés:`, selectedEmployees.map(emp => emp.email))
-      toast.success(`Quiz envoyé à ${selectedEmployees.length} employé(s)`)
-    } else {
-      toast.error('Veuillez sélectionner au moins un employé et un quiz')
+    try {
+      const data = await addEmployeeApi(newEmail);
+      setEmployees([...employees, { id: data.id, email: newEmail, selected: false }]);
+      setNewEmail('');
+      toast.success('Employé ajouté avec succès');
+    } catch (error) {
+      toast.error(error.message);
     }
-  }
+  };
 
-  const filteredEmployees = employees.filter(emp => 
-    emp.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const loadEmployees = async () => {
+    try {
+      const data = await fetchEmployeesApi();
+      setEmployees(data.map(emp => ({ ...emp, selected: false }))); // Initialise `selected` à `false`
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setSearchTerm('')
-      }
+    loadEmployees();
+  }, []);
+
+  const deleteEmployee = async (id) => {
+    try {
+      await deleteEmployeeApi(id);
+      setEmployees(employees.filter(emp => emp.id !== id));
+      toast.info('Employé supprimé');
+    } catch (error) {
+      toast.error(error.message);
     }
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [])
+  };
+
+  const sendQuiz = async () => {
+    const selectedEmployees = employees.filter(emp => emp.selected);
+    if (selectedEmployees.length > 0 && selectedQuiz) {
+      try {
+        const emails = selectedEmployees.map(emp => emp.email);
+        await sendQuizApi({ quizId: selectedQuiz, emails });
+        toast.success(`Quiz envoyé à ${selectedEmployees.length} employé(s)`);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    } else {
+      toast.error('Veuillez sélectionner au moins un employé et un quiz');
+    }
+  };
+
+  const toggleEmployeeSelection = (id) => {
+    setEmployees(prevEmployees =>
+      prevEmployees.map(emp =>
+        emp.id === id ? { ...emp, selected: !emp.selected } : emp
+      )
+    );
+  };
+
+  const filteredEmployees = employees.filter(emp => emp.email.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Escape') {
+        setSearchTerm('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className} p-6`}>
@@ -182,33 +213,15 @@ export default function EnhancedEmployeeManagement() {
               </Select>
               <Button 
                 onClick={sendQuiz} 
-                className="bg-[#3c6382] hover:bg-[#0a3d62] text-white transition-all duration-300 ease-in-out transform hover:scale-105"
+                className="bg-[#38ada9] hover:bg-[#079992] text-white transition-all duration-300 ease-in-out transform hover:scale-105"
               >
                 <Send className="mr-2 h-4 w-4" /> Envoyer le Quiz
               </Button>
             </div>
           </div>
-
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { icon: User, label: "Employés enregistrés", value: employees.length },
-              { icon: Users, label: "Employés sélectionnés", value: employees.filter(emp => emp.selected).length },
-              { icon: Mail, label: "Quiz disponibles", value: quizzes.length }
-            ].map((stat, index) => (
-              <Card key={index} className="bg-[#82ccdd]/10 p-4 rounded-lg shadow-md border border-[#82ccdd]/30 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                <div className="flex items-center space-x-3">
-                  <stat.icon className="h-8 w-8 text-[#3c6382]" />
-                  <div>
-                    <span className="text-2xl font-bold text-[#0a3d62]">{stat.value}</span>
-                    <p className="text-sm text-[#3c6382] mt-1">{stat.label}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
         </CardContent>
       </Card>
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer />
     </div>
-  )
+  );
 }

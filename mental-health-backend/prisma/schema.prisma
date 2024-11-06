@@ -4,96 +4,85 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["mongoDb"]
+  provider = "prisma-client-js"
 }
 
 model User {
-  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
-  email              String              @unique
-  name               String?
-  role               Role                @default(USER)
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String?        @db.ObjectId
+  company           Company?       @relation("CompanyEmployees", fields: [companyId], references: [id], onDelete: Cascade)
+  email             String          @unique // Ajoutez cette ligne
+  name              String?         // Ajoutez cette ligne
+  role              String?         // Ajoutez cette ligne, ou utilisez un enum si vous préférez
   password           String
-  questionnaires     Questionnaire[]
-  responses          Response[]
+  questionnaires    UserQuestionnaire[]
+  responses         Response[]
   relaxationSessions RelaxationSession[]
-  recommendations    Recommendation[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  companyId          String?             @db.ObjectId
-  Company            Company?            @relation(fields: [companyId], references: [id])
-
-  @@map("users")
+  recommendations   Recommendation[]
 }
 
-enum Role {
-  USER
-  ADMIN
+
+model Company {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  employees User[]   @relation("CompanyEmployees") // Supprimez "references: [id]"
+  analytics Analytics[]
 }
 
 model Questionnaire {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?
-  questions   Question[]
-  userId      String     @db.ObjectId
-  user        User       @relation(fields: [userId], references: [id])
-  responses   Response[]
-  createdAt   DateTime   @default(now())
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  users      UserQuestionnaire[]
+  questions  Question[]
+  responses  Response[] // Ajoutez ce champ pour lier les réponses à ce questionnaire
 }
 
 model Question {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  questionText    String
-  questionnaireId String        @db.ObjectId
-  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id])
-  responses       Response[]
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  text             String
+  questionnaireId  String     @db.ObjectId
+  questionnaire    Questionnaire @relation(fields: [questionnaireId], references: [id])
+  responses        Response[]
 }
 
 model Response {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  answer          String
-  userId          String         @db.ObjectId
-  user            User           @relation(fields: [userId], references: [id])
-  questionId      String         @db.ObjectId
-  question        Question       @relation(fields: [questionId], references: [id])
-  questionnaireId String?        @db.ObjectId
-  Questionnaire   Questionnaire? @relation(fields: [questionnaireId], references: [id])
-  createdAt       DateTime       @default(now())
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @db.ObjectId
+  user            User      @relation(fields: [userId], references: [id])
+  questionId      String    @db.ObjectId
+  question        Question   @relation(fields: [questionId], references: [id])
+  questionnaireId String?   @db.ObjectId
+  questionnaire   Questionnaire? @relation(fields: [questionnaireId], references: [id])
+  createdAt       DateTime  @default(now())
 }
 
 model RelaxationSession {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?
-  duration    Int // durée en minutes
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  duration  Int
+  createdAt DateTime   @default(now())
 }
 
 model Recommendation {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  message   String
+  createdAt DateTime   @default(now())
 }
 
 model Analytics {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  report    Json // un rapport qui pourrait être structuré en JSON
-  companyId String   @db.ObjectId
-  company   Company  @relation(fields: [companyId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId  String   @db.ObjectId
+  company    Company  @relation(fields: [companyId], references: [id])
+  data       Json     // Ou tout autre type de données que vous souhaitez stocker
 }
 
-model Company {
-  id        String      @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  employees User[]
-  analytics Analytics[]
-  createdAt DateTime    @default(now())
+model UserQuestionnaire {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId // Ajout d'un champ d'ID unique
+  userId          String         @db.ObjectId
+  questionnaireId  String         @db.ObjectId
+  user            User           @relation(fields: [userId], references: [id])
+  questionnaire    Questionnaire  @relation(fields: [questionnaireId], references: [id])
 }

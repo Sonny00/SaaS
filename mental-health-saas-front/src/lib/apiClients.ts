@@ -1,53 +1,42 @@
+const API_BASE_URL = 'http://localhost:8000'; // Remplacez par l'URL de votre API
 
-const API_URL = 'http://localhost:3000'; // Ton backend URL
-
-
-export async function registerUser(email: string, password: string) {
-  const response = await fetch(`${API_URL}/auth/register`, {
+// Fonction pour ajouter un employé
+export const addEmployeeApi = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/employees`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email }),
   });
 
   if (!response.ok) {
-    throw new Error('Registration failed');
+    throw new Error('Erreur lors de l\'ajout de l\'employé');
   }
 
-  return response.json();
-}
+  return await response.json();
+};
 
-// Fonction pour la connexion
-export async function loginUser(email: string, password: string) {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-  });
+// Fonction pour récupérer les employés
+export const fetchEmployeesApi = async () => {
+  const response = await fetch(`${API_BASE_URL}/employees`);
 
   if (!response.ok) {
-    throw new Error('Login failed');
+    throw new Error('Erreur lors de la récupération des employés');
   }
 
-  return response.json(); // Retourne le token JWT
-}
+  return await response.json();
+};
 
-// Fonction pour vérifier si un token est valide
-export async function verifyToken(token: string) {
-  const response = await fetch(`${API_URL}/auth/protected`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`, // Ajoute le token dans les headers
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Token verification failed');
-  }
-
-  return response.json();
-}
+// Fonction pour supprimer un employé
+export const deleteEmployeeApi = async (id) => {
+    const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
+      method: 'DELETE',
+    });
+  
+    if (!response.ok) {
+      throw new Error("Erreur lors de la suppression de l'employé");
+    }
+  
+    return await response.json();
+  };
