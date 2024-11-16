@@ -26,6 +26,7 @@ import {
   LogOut,
   MessageSquareMore,
   Speech,
+  CircleHelp 
 } from "lucide-react";
 
 // Import dynamique des graphiques pour lazy loading
@@ -75,10 +76,11 @@ const mockActivitiesData = [
 const navItems = [
   { name: "Accueil", href: "/", icon: Home },
   //{ name: "Statistiques", href: "/statistics", icon: Activity },
-  { name: "Rapports", href: "/rapports", icon: FileQuestion },
+  //{ name: "Rapports", href: "/rapports", icon: FileQuestion },
   { name: "Questionnaires", href: "/management", icon: FileQuestion },
   { name: "Messages", href: "/messages", icon: MessageCircle },
   { name: "Entretiens", href: "/entretiens", icon: Speech },
+  { name: "Gestion des quiz", href: "/gestion_quizz", icon: CircleHelp },
   { name: "Aide", href: "/help", icon: HelpCircle },
   
 ];

@@ -7,53 +7,61 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id                String         @id @default(auto()) @map("_id") @db.ObjectId
-  companyId         String?        @db.ObjectId
-  company           Company?       @relation("CompanyEmployees", fields: [companyId], references: [id], onDelete: Cascade)
-  email             String          @unique // Ajoutez cette ligne
-  name              String?         // Ajoutez cette ligne
-  role              String?         // Ajoutez cette ligne, ou utilisez un enum si vous préférez
-  password           String
-  questionnaires    UserQuestionnaire[]
-  responses         Response[]
-  relaxationSessions RelaxationSession[]
-  recommendations   Recommendation[]
+enum Role {
+  USER
+  ADMIN
 }
 
+model User {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId          String?            @db.ObjectId
+  company            Company?           @relation("CompanyEmployees", fields: [companyId], references: [id], onDelete: Cascade)
+  email              String             @unique
+  name               String?
+  role               Role               @default(USER)
+  password           String
+  questionnaires     UserQuestionnaire[]
+  responses          Response[]
+  relaxationSessions RelaxationSession[]
+  recommendations    Recommendation[]
+  interviewRequests  InterviewRequest[] // Liens aux demandes d'entretien
+}
 
 model Company {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  employees User[]   @relation("CompanyEmployees") // Supprimez "references: [id]"
-  analytics Analytics[]
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  employees  User[]      @relation("CompanyEmployees")
+  analytics  Analytics[]
 }
 
 model Questionnaire {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  title      String
-  users      UserQuestionnaire[]
-  questions  Question[]
-  responses  Response[] // Ajoutez ce champ pour lier les réponses à ce questionnaire
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  users       UserQuestionnaire[]
+  questions   Question[]
+  responses   Response[]
 }
 
 model Question {
-  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
   text             String
-  questionnaireId  String     @db.ObjectId
+  questionnaireId  String       @db.ObjectId
   questionnaire    Questionnaire @relation(fields: [questionnaireId], references: [id])
   responses        Response[]
 }
 
 model Response {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String    @db.ObjectId
-  user            User      @relation(fields: [userId], references: [id])
-  questionId      String    @db.ObjectId
-  question        Question   @relation(fields: [questionId], references: [id])
-  questionnaireId String?   @db.ObjectId
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId
+  user            User          @relation(fields: [userId], references: [id])
+  questionId      String        @db.ObjectId
+  question        Question      @relation(fields: [questionId], references: [id])
+  questionnaireId String?       @db.ObjectId
   questionnaire   Questionnaire? @relation(fields: [questionnaireId], references: [id])
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime      @default(now())
 }
 
 model RelaxationSession {
@@ -76,13 +84,38 @@ model Analytics {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   companyId  String   @db.ObjectId
   company    Company  @relation(fields: [companyId], references: [id])
-  data       Json     // Ou tout autre type de données que vous souhaitez stocker
+  data       Json
 }
 
 model UserQuestionnaire {
-  id               String         @id @default(auto()) @map("_id") @db.ObjectId // Ajout d'un champ d'ID unique
-  userId          String         @db.ObjectId
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String         @db.ObjectId
   questionnaireId  String         @db.ObjectId
-  user            User           @relation(fields: [userId], references: [id])
+  user             User           @relation(fields: [userId], references: [id])
   questionnaire    Questionnaire  @relation(fields: [questionnaireId], references: [id])
+  completionDate   DateTime?
+}
+
+model EmailSettings {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  emailAddress String
+  emailPassword String
+  smtpServer   String
+  smtpPort     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model InterviewRequest {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  date          DateTime // Date de l'entretien
+  time          String   // Heure de l'entretien
+  questionnaire String   // Type de questionnaire associé
+  status        String   // Statut de la demande ('pending', 'confirmed', 'declined')
+  archived      Boolean  @default(false) // Champ pour indiquer si la demande est archivée
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId        String   @db.ObjectId // Relation avec un utilisateur
+  user          User     @relation(fields: [userId], references: [id])
 }
