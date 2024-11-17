@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Poppins } from 'next/font/google'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,39 +9,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Search, MessageCircle, FileDown, Filter } from 'lucide-react'
+import { ArrowLeft, Search, FileDown, Edit, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { motion } from 'framer-motion'
 import { jsPDF } from "jspdf"
 import "jspdf-autotable"
+import { addAnonymousMessageApi, fetchAnonymousMessagesApi, updateAnonymousMessageApi, deleteAnonymousMessageApi } from '../../lib/apiClients'
+import { Label } from "@/components/ui/label";
 
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
 })
 
-// Simulated data for messages
-const initialMessages = [
-  { id: 1, subject: "Problème de communication", content: "Je ressens un manque de communication au sein de l'équipe...", date: "2023-09-15", status: "Non traité", priority: "Moyenne" },
-  { id: 2, subject: "Suggestion d'amélioration", content: "J'ai une idée pour améliorer notre processus de...", date: "2023-09-16", status: "En cours", priority: "Basse" },
-  { id: 3, subject: "Harcèlement", content: "Je souhaite signaler un comportement inapproprié...", date: "2023-09-17", status: "Urgent", priority: "Haute" },
-  { id: 4, subject: "Question sur les avantages", content: "J'aimerais avoir plus d'informations sur notre politique de...", date: "2023-09-18", status: "Traité", priority: "Basse" },
-  { id: 5, subject: "Stress au travail", content: "Je trouve que la charge de travail est devenue...", date: "2023-09-19", status: "Non traité", priority: "Moyenne" },
-]
-
-export default function AnonymousMessages() {
+export default function EnhancedAnonymousMessages() {
   const router = useRouter()
-  const [messages, setMessages] = useState(initialMessages)
+  const [messages, setMessages] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
-  const [selectedMessage, setSelectedMessage] = useState(null)
   const [selectedMessages, setSelectedMessages] = useState([])
-  const [note, setNote] = useState('')
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editingMessage, setEditingMessage] = useState(null)
+  const [isViewMessageDialogOpen, setIsViewMessageDialogOpen] = useState(false)
+  const [viewingMessage, setViewingMessage] = useState(null)
+  const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false)
+  const [bulkEditStatus, setBulkEditStatus] = useState('')
+
+  useEffect(() => {
+    fetchMessages()
+  }, [])
+
+  const fetchMessages = async () => {
+    try {
+      const fetchedMessages = await fetchAnonymousMessagesApi()
+      setMessages(fetchedMessages)
+    } catch (error) {
+      toast.error("Erreur lors de la récupération des messages")
+    }
+  }
 
   const filteredMessages = messages.filter(message => 
     message.subject.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -49,19 +58,24 @@ export default function AnonymousMessages() {
     (priorityFilter === 'all' || message.priority === priorityFilter)
   )
 
-  const handleStatusChange = (messageId, newStatus) => {
-    setMessages(messages.map(msg => 
-      msg.id === messageId ? { ...msg, status: newStatus } : msg
-    ))
-    toast.success(`Statut mis à jour : ${newStatus}`)
+  const handleStatusChange = async (messageId, newStatus) => {
+    try {
+      await updateAnonymousMessageApi(messageId, { status: newStatus })
+      setMessages(messages.map(msg => 
+        msg.id === messageId ? { ...msg, status: newStatus } : msg
+      ))
+      toast.success(`Statut mis à jour : ${newStatus}`)
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour du statut")
+    }
   }
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Urgent': return 'bg-red-500'
-      case 'En cours': return 'bg-yellow-500'
-      case 'Traité': return 'bg-green-500'
-      default: return 'bg-gray-500'
+      case 'Urgent': return 'bg-red-500 hover:bg-red-600'
+      case 'En cours': return 'bg-yellow-500 hover:bg-yellow-600'
+      case 'Traité': return 'bg-green-500 hover:bg-green-600'
+      default: return 'bg-gray-500 hover:bg-gray-600'
     }
   }
 
@@ -118,12 +132,43 @@ export default function AnonymousMessages() {
     toast.success('Rapport PDF généré avec succès')
   }
 
-  const handleSaveNote = () => {
-    if (selectedMessage && note) {
-      // Here you would typically send this note to your backend
-      console.log(`Note saved for message ${selectedMessage.id}: ${note}`)
-      toast.success('Note enregistrée avec succès')
-      setNote('')
+
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      await deleteAnonymousMessageApi(messageId)
+      setMessages(messages.filter(msg => msg.id !== messageId))
+      toast.success("Message supprimé avec succès.")
+    } catch (error) {
+      toast.error("Erreur lors de la suppression du message.")
+    }
+  }
+
+  const openEditDialog = (message) => {
+    setEditingMessage(message)
+    setIsEditDialogOpen(true)
+  }
+
+  const openViewMessageDialog = (message) => {
+    setViewingMessage(message);
+    setIsViewMessageDialogOpen(true);
+  };
+
+  const handleBulkStatusChange = async () => {
+    if (selectedMessages.length === 0 || !bulkEditStatus) return
+
+    try {
+      await Promise.all(selectedMessages.map(messageId => 
+        updateAnonymousMessageApi(messageId, { status: bulkEditStatus })
+      ))
+      setMessages(messages.map(msg => 
+        selectedMessages.includes(msg.id) ? { ...msg, status: bulkEditStatus } : msg
+      ))
+      setIsBulkEditDialogOpen(false)
+      setBulkEditStatus('')
+      setSelectedMessages([])
+      toast.success(`Statut mis à jour en masse : ${bulkEditStatus}`)
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour en masse des statuts")
     }
   }
 
@@ -134,34 +179,43 @@ export default function AnonymousMessages() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="max-w-6xl mx-auto bg-white/95 backdrop-blur-md shadow-2xl rounded-xl overflow-hidden border border-[#82ccdd]/30">
+        <Card className="max-w-7xl mx-auto bg-white/95 backdrop-blur-md shadow-2xl rounded-xl overflow-hidden border border-[#82ccdd]/30">
           <CardHeader className="pb-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <Button
                 onClick={() => router.back()}
                 variant="outline"
                 size="sm"
-                className="bg-white/50 hover:bg-white/70 text-[#0a3d62] border-[#82ccdd] transition-all duration-300 ease-in-out transform hover:scale-105"
+                className="bg-white/50 hover:bg-white/70 text-[#0a3d62] border-[#82ccdd]/30 transition-all duration-300 ease-in-out transform hover:scale-105"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" /> Retour
               </Button>
-              <CardTitle className="text-2xl font-bold text-center text-[#0a3d62]">Messages Anonymes des Employés</CardTitle>
-              <Button
-                onClick={exportToPDF}
-                variant="outline"
-                size="sm"
-                className="bg-white/50 hover:bg-white/70 text-[#0a3d62] border-[#82ccdd] transition-all duration-300 ease-in-out transform hover:scale-105"
-                disabled={selectedMessages.length === 0}
-              >
-                <FileDown className="mr-2 h-4 w-4" /> Exporter en PDF
-              </Button>
+              <CardTitle className="text-4xl md:text-3xl font-bold text-center text-[#0a3d62]">Messages Anonymes des Employés</CardTitle>
+              <div className="flex gap-2">
+                
+                <Button
+                  onClick={exportToPDF}
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/50 hover:bg-white/70 text-[#0a3d62] border-[#82ccdd]/30 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  disabled={selectedMessages.length === 0}
+                >
+                  <FileDown className="mr-2 h-4 w-4" /> Exporter en PDF
+                </Button>
+                <Button
+                  onClick={() => setIsBulkEditDialogOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/50 hover:bg-white/70 text-[#0a3d62] border-[#82ccdd]/30 transition-all duration-300 ease-in-out transform hover:scale-105"
+                  disabled={selectedMessages.length === 0}
+                >
+                  <Edit className="mr-2 h-4 w-4" /> Modifier en masse
+                </Button>
+              </div>
             </div>
-            <CardDescription className="text-center text-[#3c6382] mt-2">
-              Gérez et répondez aux messages anonymes de vos employés
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-grow relative">
                   <Input
@@ -169,7 +223,7 @@ export default function AnonymousMessages() {
                     placeholder="Rechercher un message..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 w-full rounded-full border-gray-300 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-300"
+                    className="pl-10 pr-4 py-2 w-full rounded-full border-gray-300 focus:border-[#82ccdd] focus:ring focus:ring-[#82ccdd]/20 focus:ring-opacity-50 transition-all duration-300"
                   />
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 </div>
@@ -178,10 +232,9 @@ export default function AnonymousMessages() {
                     <SelectValue placeholder="Filtrer par statut" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="Non traité">Non traité</SelectItem>
-                    <SelectItem value="En cours">En cours</SelectItem>
-                    <SelectItem value="Urgent">Urgent</SelectItem>
+                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="NON_TRAITE">Non traité</SelectItem>
+                    <SelectItem value="EN_COURS">En cours</SelectItem>
                     <SelectItem value="Traité">Traité</SelectItem>
                   </SelectContent>
                 </Select>
@@ -190,114 +243,168 @@ export default function AnonymousMessages() {
                     <SelectValue placeholder="Filtrer par priorité" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes les priorités</SelectItem>
-                    <SelectItem value="Basse">Basse</SelectItem>
-                    <SelectItem value="Moyenne">Moyenne</SelectItem>
+                    <SelectItem value="all">Tous</SelectItem>
                     <SelectItem value="Haute">Haute</SelectItem>
+                    <SelectItem value="Moyenne">Moyenne</SelectItem>
+                    <SelectItem value="Basse">Basse</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <Card>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
+              <Table className="rounded-xl border border-[#82ccdd]/30 text-base">
+                <TableHeader>
+                  <TableRow className="text-lg">
+                    <TableHead className="w-4">
+                      <Checkbox
+                        checked={selectedMessages.length === filteredMessages.length}
+                        onCheckedChange={toggleAllMessages}
+                      />
+                    </TableHead>
+                    <TableHead>N°</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Sujet</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Priorité</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredMessages.map((message, index) => (
+                    <TableRow key={message.id} className="text-base">
+                      <TableCell>
                         <Checkbox
-                          checked={selectedMessages.length === filteredMessages.length}
-                          onCheckedChange={toggleAllMessages}
+                          checked={selectedMessages.includes(message.id)}
+                          onCheckedChange={() => toggleMessageSelection(message.id)}
                         />
-                      </TableHead>
-                      <TableHead>Sujet</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Priorité</TableHead>
-                      <TableHead>Actions</TableHead>
+                      </TableCell>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{new Date(message.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="link"
+                          onClick={() => openViewMessageDialog(message)}
+                          className="p-0 h-auto font-normal text-left"
+                        >
+                          {message.subject}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${getStatusColor(message.status)} text-white text-sm px-3 py-1`}>{message.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${getPriorityColor(message.priority)} text-white text-sm px-3 py-1`}>{message.priority}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button onClick={() => openEditDialog(message)} variant="outline" size="sm" className="text-sm px-3 py-1">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button onClick={() => handleDeleteMessage(message.id)} variant="destructive" size="sm" className="text-sm px-3 py-1">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMessages.map((message) => (
-                      <TableRow key={message.id}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedMessages.includes(message.id)}
-                            onCheckedChange={() => toggleMessageSelection(message.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{message.subject}</TableCell>
-                        <TableCell>{message.date}</TableCell>
-                        <TableCell>
-                          <Badge className={`${getStatusColor(message.status)} text-white`}>
-                            {message.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={`${getPriorityColor(message.priority)} text-white`}>
-                            {message.priority}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedMessage(message)}
-                              >
-                                <MessageCircle className="mr-2 h-4 w-4" /> Voir
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                              <DialogHeader>
-                                <DialogTitle>{selectedMessage?.subject}</DialogTitle>
-                                <DialogDescription>
-                                  Date: {selectedMessage?.date}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="mt-4 space-y-4">
-                                <p>{selectedMessage?.content}</p>
-                                <div className="flex justify-between items-center">
-                                  <Select 
-                                    value={selectedMessage?.status} 
-                                    onValueChange={(value) => handleStatusChange(selectedMessage.id, value)}
-                                  >
-                                    <SelectTrigger className="w-[180px]">
-                                      <SelectValue placeholder="Changer le statut" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Non traité">Non traité</SelectItem>
-                                      <SelectItem value="En cours">En cours</SelectItem>
-                                      <SelectItem value="Urgent">Urgent</SelectItem>
-                                      <SelectItem value="Traité">Traité</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Badge className={`${getPriorityColor(selectedMessage?.priority)} text-white`}>
-                                    {selectedMessage?.priority}
-                                  </Badge>
-                                </div>
-                                <Textarea 
-                                  placeholder="Ajouter une note ou une réponse..." 
-                                  value={note}
-                                  onChange={(e) => setNote(e.target.value)}
-                                />
-                                <DialogFooter>
-                                  <Button variant="outline" onClick={() => setSelectedMessage(null)}>Fermer</Button>
-                                  <Button onClick={handleSaveNote}>Enregistrer</Button>
-                                </DialogFooter>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Card>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>
       </motion.div>
-      <ToastContainer position="bottom-right" autoClose={3000} />
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le statut du message</DialogTitle>
+          </DialogHeader>
+          <Select
+            value={editingMessage?.status}
+            onValueChange={(newStatus) => {
+              handleStatusChange(editingMessage.id, newStatus)
+              setIsEditDialogOpen(false)
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choisir un nouveau statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Non traité">Non traité</SelectItem>
+              <SelectItem value="En cours">En cours</SelectItem>
+              <SelectItem value="Traité">Traité</SelectItem>
+            </SelectContent>
+          </Select>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isViewMessageDialogOpen} onOpenChange={setIsViewMessageDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{viewingMessage?.subject}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="date" className="text-right">
+                Date
+              </Label>
+              <div id="date" className="col-span-3">
+                {viewingMessage && new Date(viewingMessage.date).toLocaleString()}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Statut
+              </Label>
+              <div id="status" className="col-span-3">
+                <Badge className={`${getStatusColor(viewingMessage?.status)} text-white text-sm px-3 py-1`}>
+                  {viewingMessage?.status}
+                </Badge>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="priority" className="text-right">
+                Priorité
+              </Label>
+              <div id="priority" className="col-span-3">
+                <Badge className={`${getPriorityColor(viewingMessage?.priority)} text-white text-sm px-3 py-1`}>
+                  {viewingMessage?.priority}
+                </Badge>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="content" className="text-right">
+                Contenu
+              </Label>
+              <div id="content" className="col-span-3">
+                {viewingMessage?.content}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isBulkEditDialogOpen} onOpenChange={setIsBulkEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le statut des messages sélectionnés</DialogTitle>
+          </DialogHeader>
+          <Select
+            value={bulkEditStatus}
+            onValueChange={setBulkEditStatus}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choisir un nouveau statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Non traité">Non traité</SelectItem>
+              <SelectItem value="En cours">En cours</SelectItem>
+              <SelectItem value="Traité">Traité</SelectItem>
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button onClick={handleBulkStatusChange}>Appliquer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

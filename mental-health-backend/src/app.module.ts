@@ -8,6 +8,7 @@ import { UsersModule } from './user/user.module';
 import { EmployeeModule } from './employee/employee.module';
 import { EmailModule } from './emailService/email.module'; 
 import { InterviewRequestModule } from './InterviewRequest/InterviewRequest.module'; 
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { InterviewRequestModule } from './InterviewRequest/InterviewRequest.modu
     EmployeeModule, 
     EmailModule,
     InterviewRequestModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

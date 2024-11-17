@@ -130,3 +130,85 @@ export const deleteInterviewRequestApi = async (id) => {
 
   return await response.json();
 };
+
+// Fonctions pour la gestion des messages anonymes
+
+// Ajouter un message anonyme
+export const addAnonymousMessageApi = async (messageContent) => {
+  const response = await fetch(`${API_BASE_URL}/anonymous-messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ content: messageContent }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Erreur lors de l'ajout du message anonyme");
+  }
+
+  return await response.json();
+};
+
+// Récupérer tous les messages anonymes
+export const fetchAnonymousMessagesApi = async () => {
+  const response = await fetch(`${API_BASE_URL}/anonymous-messages`);
+
+  if (!response.ok) {
+    throw new Error("Erreur lors de la récupération des messages anonymes");
+  }
+
+  return await response.json();
+};
+
+// Récupérer un message anonyme spécifique
+export const fetchAnonymousMessageByIdApi = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/anonymous-messages/${id}`);
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Message avec l'ID ${id} non trouvé`);
+    }
+    throw new Error("Erreur lors de la récupération du message anonyme");
+  }
+
+  return await response.json();
+};
+
+// Mettre à jour un message anonyme
+export const updateAnonymousMessageApi = async (id, updatedContent) => {
+  const response = await fetch(`${API_BASE_URL}/anonymous-messages/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ content: updatedContent }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Message avec l'ID ${id} non trouvé`);
+    }
+    throw new Error("Erreur lors de la mise à jour du message anonyme");
+  }
+
+  return await response.json();
+};
+
+// Supprimer un message anonyme
+export const deleteAnonymousMessageApi = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/anonymous-messages/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Message avec l'ID ${id} non trouvé`);
+    }
+    throw new Error("Erreur lors de la suppression du message anonyme");
+  }
+
+  return await response.json();
+};
+
+// Supprimer un message anonyme

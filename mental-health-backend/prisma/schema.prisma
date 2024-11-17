@@ -119,3 +119,27 @@ model InterviewRequest {
   userId        String   @db.ObjectId // Relation avec un utilisateur
   user          User     @relation(fields: [userId], references: [id])
 }
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  subject   String
+  content   String
+  date      String
+  status    MessageStatus
+  priority  MessagePriority
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MessageStatus {
+  NON_TRAITE
+  EN_COURS
+  TRAITE
+  URGENT
+}
+
+enum MessagePriority {
+  BASSE
+  MOYENNE
+  HAUTE
+}
