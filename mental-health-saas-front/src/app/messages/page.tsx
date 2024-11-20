@@ -38,6 +38,7 @@ export default function EnhancedAnonymousMessages() {
   const [viewingMessage, setViewingMessage] = useState(null)
   const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false)
   const [bulkEditStatus, setBulkEditStatus] = useState('')
+  
 
   useEffect(() => {
     fetchMessages()
@@ -57,33 +58,33 @@ export default function EnhancedAnonymousMessages() {
     (statusFilter === 'all' || message.status === statusFilter) &&
     (priorityFilter === 'all' || message.priority === priorityFilter)
   )
-
   const handleStatusChange = async (messageId, newStatus) => {
     try {
-      await updateAnonymousMessageApi(messageId, { status: newStatus })
+      await updateAnonymousMessageApi(messageId, newStatus); // Passer directement newStatus
       setMessages(messages.map(msg => 
         msg.id === messageId ? { ...msg, status: newStatus } : msg
-      ))
-      toast.success(`Statut mis à jour : ${newStatus}`)
+      ));
+      toast.success(`Statut mis à jour : ${newStatus}`);
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour du statut")
+      console.error(error); // Ajouter pour voir le détail de l'erreur
+      toast.error("Erreur lors de la mise à jour du statut");
     }
-  }
-
+  };
+  
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Urgent': return 'bg-red-500 hover:bg-red-600'
-      case 'En cours': return 'bg-yellow-500 hover:bg-yellow-600'
-      case 'Traité': return 'bg-green-500 hover:bg-green-600'
+      case 'URGENT': return 'bg-red-500 hover:bg-red-600'
+      case 'EN_COURS': return 'bg-yellow-500 hover:bg-yellow-600'
+      case 'TRAITE': return 'bg-green-500 hover:bg-green-600'
       default: return 'bg-gray-500 hover:bg-gray-600'
     }
   }
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'Haute': return 'bg-red-500'
-      case 'Moyenne': return 'bg-yellow-500'
-      case 'Basse': return 'bg-green-500'
+      case 'HAUTE': return 'bg-red-500'
+      case 'MOYENNE': return 'bg-yellow-500'
+      case 'BASSE': return 'bg-green-500'
       default: return 'bg-gray-500'
     }
   }
@@ -193,7 +194,7 @@ export default function EnhancedAnonymousMessages() {
               <CardTitle className="text-4xl md:text-3xl font-bold text-center text-[#0a3d62]">Messages Anonymes des Employés</CardTitle>
               <div className="flex gap-2">
                 
-                
+
                 <Button
                   onClick={exportToPDF}
                   variant="outline"
@@ -233,10 +234,9 @@ export default function EnhancedAnonymousMessages() {
                     <SelectValue placeholder="Filtrer par statut" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="NON_TRAITE">Non traité</SelectItem>
-                    <SelectItem value="EN_COURS">En cours</SelectItem>
-                    <SelectItem value="Traité">Traité</SelectItem>
+                    <SelectItem value="all">TOUS</SelectItem>
+                    <SelectItem value="EN_COURS">EN COURS</SelectItem>
+                    <SelectItem value="TRAITE">TRAITE</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -244,10 +244,11 @@ export default function EnhancedAnonymousMessages() {
                     <SelectValue placeholder="Filtrer par priorité" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="Haute">Haute</SelectItem>
-                    <SelectItem value="Moyenne">Moyenne</SelectItem>
-                    <SelectItem value="Basse">Basse</SelectItem>
+                    <SelectItem value="all">TOUS</SelectItem>
+                    <SelectItem value="HAUTE">Haute</SelectItem>
+                    <SelectItem value="MOYENNE">Moyenne</SelectItem>
+                    <SelectItem value="BASSE">Basse</SelectItem>
+                    <SelectItem value="BASSE">Urgente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -297,9 +298,18 @@ export default function EnhancedAnonymousMessages() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button onClick={() => openEditDialog(message)} variant="outline" size="sm" className="text-sm px-3 py-1">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                        <Button
+  onClick={() => {
+    openEditDialog(message);  // Ouvre l'édition
+  }}
+  variant="outline"
+  size="sm"
+  className="text-sm px-3 py-1"
+>
+  <Edit className="h-4 w-4" />
+</Button>
+
+
                           <Button onClick={() => handleDeleteMessage(message.id)} variant="destructive" size="sm" className="text-sm px-3 py-1">
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -315,28 +325,28 @@ export default function EnhancedAnonymousMessages() {
       </motion.div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier le statut du message</DialogTitle>
-          </DialogHeader>
-          <Select
-            value={editingMessage?.status}
-            onValueChange={(newStatus) => {
-              handleStatusChange(editingMessage.id, newStatus)
-              setIsEditDialogOpen(false)
-            }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choisir un nouveau statut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Non traité">Non traité</SelectItem>
-              <SelectItem value="En cours">En cours</SelectItem>
-              <SelectItem value="Traité">Traité</SelectItem>
-            </SelectContent>
-          </Select>
-        </DialogContent>
-      </Dialog>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Modifier le statut du message</DialogTitle>
+    </DialogHeader>
+    <Select
+      value={editingMessage?.status}
+      onValueChange={(newStatus) => {
+        console.log("Changement de statut:", newStatus);  // Pour déboguer
+        handleStatusChange(editingMessage.id, newStatus);
+        setIsEditDialogOpen(false);
+      }}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Choisir un nouveau statut" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="EN_COURS">En Cours</SelectItem>
+        <SelectItem value="TRAITE">Traité</SelectItem>
+      </SelectContent>
+    </Select>
+  </DialogContent>
+</Dialog>
 
       <Dialog open={isViewMessageDialogOpen} onOpenChange={setIsViewMessageDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -397,7 +407,7 @@ export default function EnhancedAnonymousMessages() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Non traité">Non traité</SelectItem>
-              <SelectItem value="En cours">En cours</SelectItem>
+              <SelectItem value="EN COURS">En cours</SelectItem>
               <SelectItem value="Traité">Traité</SelectItem>
             </SelectContent>
           </Select>

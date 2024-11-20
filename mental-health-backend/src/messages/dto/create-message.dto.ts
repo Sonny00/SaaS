@@ -13,9 +13,9 @@ export class CreateMessageDto {
   @IsNotEmpty()
   date: string;
 
-  @IsEnum(['NON_TRAITE', 'EN_COURS', 'TRAITE', 'URGENT'])
-  status: 'NON_TRAITE' | 'EN_COURS' | 'TRAITE' | 'URGENT';
+  @IsEnum([ 'EN_COURS', 'TRAITE',])
+  status: 'EN_COURS' | 'TRAITE';
 
-  @IsEnum(['BASSE', 'MOYENNE', 'HAUTE'])
-  priority: 'BASSE' | 'MOYENNE' | 'HAUTE';
+  @IsEnum(['BASSE', 'MOYENNE', 'HAUTE', 'URGENT'])
+  priority: 'BASSE' | 'MOYENNE' | 'HAUTE' | 'URGENT';
 }

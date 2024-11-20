@@ -175,25 +175,34 @@ export const fetchAnonymousMessageByIdApi = async (id) => {
   return await response.json();
 };
 
-// Mettre à jour un message anonyme
-export const updateAnonymousMessageApi = async (id, updatedContent) => {
+const validStatuses = ['NON_TRAITE', 'EN_COURS', 'TRAITE'];
+
+const isValidStatus = (status) => validStatuses.includes(status);
+
+export const updateAnonymousMessageApi = async (id, newStatus) => {
+  if (!isValidStatus(newStatus)) {
+    throw new Error(`Statut invalide: ${newStatus}`);
+  }
+
   const response = await fetch(`${API_BASE_URL}/anonymous-messages/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ content: updatedContent }),
+    body: JSON.stringify({ status: newStatus }), // JSON au bon format
   });
 
   if (!response.ok) {
     if (response.status === 404) {
       throw new Error(`Message avec l'ID ${id} non trouvé`);
     }
-    throw new Error("Erreur lors de la mise à jour du message anonyme");
+    throw new Error("Erreur lors de la mise à jour du message");
   }
 
   return await response.json();
 };
+
+
 
 // Supprimer un message anonyme
 export const deleteAnonymousMessageApi = async (id) => {

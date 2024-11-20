@@ -122,7 +122,7 @@ model InterviewRequest {
 
 model Message {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  subject   String
+  subject   String 
   content   String
   date      String
   status    MessageStatus
@@ -132,14 +132,13 @@ model Message {
 }
 
 enum MessageStatus {
-  NON_TRAITE
   EN_COURS
   TRAITE
-  URGENT
 }
 
 enum MessagePriority {
   BASSE
   MOYENNE
   HAUTE
+  URGENT
 }

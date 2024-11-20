@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
 
 export class UpdateMessageDto {
   @IsOptional()
@@ -10,14 +10,14 @@ export class UpdateMessageDto {
   content?: string;
 
   @IsOptional()
-  @IsString() // Si Prisma attend une DateTime, ajustez ici
+  @IsDateString()  // Validation simple sans message personnalisé
   date?: string;
 
   @IsOptional()
-  @IsEnum(['NON_TRAITE', 'EN_COURS', 'TRAITE', 'URGENT'])
-  status?: 'NON_TRAITE' | 'EN_COURS' | 'TRAITE' | 'URGENT';
+  @IsEnum(['EN_COURS', 'TRAITE', ])
+  status?: 'EN_COURS' | 'TRAITE';
 
   @IsOptional()
-  @IsEnum(['BASSE', 'MOYENNE', 'HAUTE'])
-  priority?: 'BASSE' | 'MOYENNE' | 'HAUTE';
+  @IsEnum(['BASSE', 'MOYENNE', 'HAUTE','URGENT'])
+  priority?: 'BASSE' | 'MOYENNE' | 'HAUTE'  | 'URGENT';
 }
