@@ -93,19 +93,17 @@ export const fetchInterviewRequestsApi = async () => {
 export const updateInterviewRequestApi = async (id, data) => {
   try {
     const response = await fetch(`${API_BASE_URL}/interview-requests/${id}`, {
-      method: 'PATCH', // Remplacez PUT par PATCH ici
+      method: 'PATCH', 
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
 
-    // Si la réponse est une erreur 404
     if (response.status === 404) {
       throw new Error(`Demande d'entretien avec l'ID ${id} non trouvée.`);
     }
 
-    // Si la réponse est OK mais avec d'autres erreurs
     if (!response.ok) {
       throw new Error('Erreur lors de la mise à jour de la demande');
     }

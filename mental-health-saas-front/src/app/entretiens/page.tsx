@@ -73,8 +73,9 @@ export default function InterviewRequests() {
   const handleArchive = async (id: string) => {
     try {
       const updatedRequest = await updateInterviewRequestApi(id, { status: "archived" })
-      setRequests(requests.filter((req) => req.id !== id))
-      setArchivedRequests([...archivedRequests, updatedRequest])
+      setRequests((prevRequests) => 
+        prevRequests.map((req) => (req.id === id ? updatedRequest : req))
+      );      setArchivedRequests([...archivedRequests, updatedRequest])
       toast.success("Entretien archivé")
     } catch (error) {
       toast.error("Erreur lors de l'archivage")
@@ -86,7 +87,7 @@ export default function InterviewRequests() {
     try {
       const updatedRequest = await updateInterviewRequestApi(id, { status: "pending" });
   
-      setRequests((prevRequests) =>
+      setRequests((prevRequests) => 
         prevRequests.map((req) => (req.id === id ? updatedRequest : req))
       );
       setArchivedRequests((prevArchivedRequests) =>
@@ -98,7 +99,6 @@ export default function InterviewRequests() {
       toast.error("Erreur lors de la réinitialisation");
     }
   };
-  
 
   const RequestCard = ({ request, showArchive = false }: { request: any; showArchive?: boolean }) => (
     <Card className="mb-4 transition-all duration-300 hover:shadow-lg">
@@ -148,14 +148,14 @@ export default function InterviewRequests() {
               </Button>
             </>
           )}
-             {request.status === "archived" && (
+          {request.status === "archived" && (
             <>
               <Button onClick={() => handleResetStatus(request.id)} variant="outline" className="text-[#0a3d62]">
                 Réinitialiser
               </Button>
             </>
           )}
-           {(request.status !== "pending" && request.status !== "archived") && (
+          {(request.status !== "pending" && request.status !== "archived") && (
             <Button onClick={() => handleArchive(request.id)} variant="outline" className="text-[#0a3d62]">
               <Archive className="mr-2 h-4 w-4" /> Archiver
             </Button>
