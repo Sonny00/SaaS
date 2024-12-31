@@ -13,22 +13,23 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true); // Le composant est monté côté client
+    setIsMounted(true); // Assure que le composant est monté côté client
   }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard');
+      router.replace('/dashboard'); // Utilisation de replace pour éviter l'historique inutile
     }
   }, [isAuthenticated, router]);
 
   if (!isMounted) {
-    return null; 
+    return <LoadingTransition />; // Retourne un indicateur de chargement
   }
 
-  return (
-    <div>
-      {!isAuthenticated ? <LoginPage /> : <LoadingTransition />}
-    </div>
+  // Si non authentifié, affiche la page de connexion
+  return !isAuthenticated ? (
+    <LoginPage />
+  ) : (
+    <LoadingTransition />
   );
 }

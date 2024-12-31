@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import dynamic from "next/dynamic";
-import { Poppins } from "next/font/google";
-import { motion } from "framer-motion";
-import { useRouter, usePathname } from "next/navigation";
-import { logout } from "../../store/slices/authSlice"; // Import du logout
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import LoadingTransition from "@/components/loading";
+import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import dynamic from "next/dynamic"
+import { Poppins } from "next/font/google"
+import { useRouter, usePathname } from "next/navigation"
+import { logout } from "../../store/slices/authSlice"
+import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import LoadingTransition from "@/components/loading"
 import {
   FileQuestion,
   Activity,
@@ -24,29 +24,33 @@ import {
   MessageCircle,
   HelpCircle,
   LogOut,
-  MessageSquareMore,
   Speech,
-  CircleHelp 
-} from "lucide-react";
+  CircleHelp,
+  Menu,
+  TrendingUp,
+  Zap,
+} from "lucide-react"
 
-// Import dynamique des graphiques pour lazy loading
-const BarChart = dynamic(() => import("recharts").then(mod => mod.BarChart), { ssr: false });
-const LineChart = dynamic(() => import("recharts").then(mod => mod.LineChart), { ssr: false });
-const PieChart = dynamic(() => import("recharts").then(mod => mod.PieChart), { ssr: false });
-const ResponsiveContainer = dynamic(() => import("recharts").then(mod => mod.ResponsiveContainer), { ssr: false });
-const XAxis = dynamic(() => import("recharts").then(mod => mod.XAxis), { ssr: false });
-const YAxis = dynamic(() => import("recharts").then(mod => mod.YAxis), { ssr: false });
-const Tooltip = dynamic(() => import("recharts").then(mod => mod.Tooltip), { ssr: false });
-const CartesianGrid = dynamic(() => import("recharts").then(mod => mod.CartesianGrid), { ssr: false });
-const Bar = dynamic(() => import("recharts").then(mod => mod.Bar), { ssr: false });
-const Line = dynamic(() => import("recharts").then(mod => mod.Line), { ssr: false });
-const Pie = dynamic(() => import("recharts").then(mod => mod.Pie), { ssr: false });
-const Cell = dynamic(() => import("recharts").then(mod => mod.Cell), { ssr: false });
+// Dynamic imports for charts
+const BarChart = dynamic(() => import("recharts").then((mod) => mod.BarChart), { ssr: false })
+const LineChart = dynamic(() => import("recharts").then((mod) => mod.LineChart), { ssr: false })
+const PieChart = dynamic(() => import("recharts").then((mod) => mod.PieChart), { ssr: false })
+const AreaChart = dynamic(() => import("recharts").then((mod) => mod.AreaChart), { ssr: false })
+const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => mod.ResponsiveContainer), { ssr: false })
+const XAxis = dynamic(() => import("recharts").then((mod) => mod.XAxis), { ssr: false })
+const YAxis = dynamic(() => import("recharts").then((mod) => mod.YAxis), { ssr: false })
+const Tooltip = dynamic(() => import("recharts").then((mod) => mod.Tooltip), { ssr: false })
+const CartesianGrid = dynamic(() => import("recharts").then((mod) => mod.CartesianGrid), { ssr: false })
+const Bar = dynamic(() => import("recharts").then((mod) => mod.Bar), { ssr: false })
+const Line = dynamic(() => import("recharts").then((mod) => mod.Line), { ssr: false })
+const Pie = dynamic(() => import("recharts").then((mod) => mod.Pie), { ssr: false })
+const Area = dynamic(() => import("recharts").then((mod) => mod.Area), { ssr: false })
+const Cell = dynamic(() => import("recharts").then((mod) => mod.Cell), { ssr: false })
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
-});
+})
 
 const mockWellbeingData = [
   { day: "Lun", score: 7 },
@@ -56,14 +60,14 @@ const mockWellbeingData = [
   { day: "Ven", score: 9 },
   { day: "Sam", score: 7 },
   { day: "Dim", score: 8 },
-];
+]
 
 const mockStressLevels = [
   { name: "Semaine 1", niveau: 6 },
   { name: "Semaine 2", niveau: 7 },
   { name: "Semaine 3", niveau: 5 },
   { name: "Semaine 4", niveau: 4 },
-];
+]
 
 const mockActivitiesData = [
   { name: "Méditation", value: 30 },
@@ -71,50 +75,68 @@ const mockActivitiesData = [
   { name: "Lecture", value: 20 },
   { name: "Socialisation", value: 15 },
   { name: "Hobby", value: 10 },
-];
+]
+
+const mockProductivityData = [
+  { month: "Jan", productivity: 65 },
+  { month: "Fév", productivity: 59 },
+  { month: "Mar", productivity: 80 },
+  { month: "Avr", productivity: 81 },
+  { month: "Mai", productivity: 56 },
+  { month: "Juin", productivity: 55 },
+  { month: "Juil", productivity: 40 },
+]
+
+const mockEngagementData = [
+  { month: "Jan", engagement: 4000 },
+  { month: "Fév", engagement: 3000 },
+  { month: "Mar", engagement: 5000 },
+  { month: "Avr", engagement: 4500 },
+  { month: "Mai", engagement: 6000 },
+  { month: "Juin", engagement: 5500 },
+  { month: "Juil", engagement: 7000 },
+]
 
 const navItems = [
   { name: "Accueil", href: "/", icon: Home },
-  //{ name: "Statistiques", href: "/statistics", icon: Activity },
-  //{ name: "Rapports", href: "/rapports", icon: FileQuestion },
   { name: "Questionnaires", href: "/management", icon: FileQuestion },
   { name: "Messages", href: "/messages", icon: MessageCircle },
   { name: "Entretiens", href: "/entretiens", icon: Speech },
   { name: "Gestion des quiz", href: "/gestion_quizz", icon: CircleHelp },
   { name: "Aide", href: "/help", icon: HelpCircle },
-  
-];
+]
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
 export default function Dashboard() {
-  const [wellbeingScore, setWellbeingScore] = useState(75);
-  const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: any) => state.auth); // Vérification de l'authentification
+  const [wellbeingScore, setWellbeingScore] = useState(75)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const dispatch = useDispatch()
+  const { isAuthenticated } = useSelector((state: any) => state.auth)
 
   const handleLogout = () => {
-    console.log("Déconnexion en cours...");
-    localStorage.removeItem("token"); // Suppression du token
-    dispatch(logout()); // Dispatch de l'action de déconnexion
-    router.push('/'); // Redirection vers la page d'accueil
-  };
+    console.log("Déconnexion en cours...")
+    localStorage.removeItem("token")
+    dispatch(logout())
+    router.push('/')
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/");
+      router.push("/")
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router])
 
   if (!isAuthenticated) {
-    return <LoadingTransition />;
+    return <LoadingTransition />
   }
 
   return (
     <div className={`flex h-screen bg-gradient-to-br from-[#82ccdd] to-[#60a3bc] ${poppins.className}`}>
-      {/* Navigation sidebar */}
-      <nav className="w-64 bg-gradient-to-b from-[#0a3d62] to-[#0c2461] text-white flex flex-col h-full">
+      {/* Sidebar */}
+      <nav className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-[#0a3d62] to-[#0c2461] text-white transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
         <div className="p-6 flex flex-col h-full">
           <div className="text-2xl font-bold mb-8 flex items-center">
             <Brain className="h-8 w-8 mr-2" />
@@ -151,66 +173,39 @@ export default function Dashboard() {
 
       {/* Main content */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-8">
-            <header className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold text-[#0a3d62]">Tableau de bord</h1>
-              <Link href="/settings" passHref>
-                <Button variant="outline" className="bg-white/50 hover:bg-white/70">
-                  <Settings className="mr-2 h-4 w-4" /> Paramètres
-                </Button>
-              </Link>
-            </header>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#3c6382]">Score de bien-être</CardTitle>
-                  <Activity className="h-4 w-4 text-[#0a3d62]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[#0a3d62]">{wellbeingScore}/100</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#3c6382]">Sessions de relaxation</CardTitle>
-                  <Brain className="h-4 w-4 text-[#0a3d62]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[#0a3d62]">12</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#3c6382]">Employés actifs</CardTitle>
-                  <Users className="h-4 w-4 text-[#0a3d62]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[#0a3d62]">1,274</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#3c6382]">Activités à venir</CardTitle>
-                  <Calendar className="h-4 w-4 text-[#0a3d62]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[#0a3d62]">8</div>
-                </CardContent>
-              </Card>
+        <header className="bg-white/80 backdrop-blur-md shadow-md p-4 lg:p-6 flex justify-between items-center">
+          <Button
+            variant="ghost"
+            className="lg:hidden"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <h1 className="text-2xl lg:text-3xl font-bold text-[#0a3d62]">Tableau de bord</h1>
+          <Link href="/settings" passHref>
+            <Button variant="outline" className="bg-white/50 hover:bg-white/70">
+              <Settings className="mr-2 h-4 w-4" /> Paramètres
+            </Button>
+          </Link>
+        </header>
+        <main className="h-[calc(100vh-80px)] overflow-auto p-4 lg:p-6" >
+          <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <StatCard title="Score de bien-être" value={`${wellbeingScore}/100`} icon={Activity} />
+              <StatCard title="Sessions de relaxation" value="12" icon={Brain} />
+              <StatCard title="Employés actifs" value="1,274" icon={Users} />
+              <StatCard title="Activités à venir" value="8" icon={Calendar} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-[#0a3d62]">Score de bien-être par jour</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
+            <Tabs defaultValue="wellbeing" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="wellbeing">Bien-être</TabsTrigger>
+                <TabsTrigger value="productivity">Productivité</TabsTrigger>
+                <TabsTrigger value="engagement">Engagement</TabsTrigger>
+              </TabsList>
+              <TabsContent value="wellbeing" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <ChartCard title="Score de bien-être par jour" chart={
                     <LineChart data={mockWellbeingData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="day" />
@@ -218,16 +213,8 @@ export default function Dashboard() {
                       <Tooltip />
                       <Line type="monotone" dataKey="score" stroke="#0a3d62" strokeWidth={2} />
                     </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-[#0a3d62]">Niveaux de stress hebdomadaires</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
+                  } />
+                  <ChartCard title="Niveaux de stress hebdomadaires" chart={
                     <BarChart data={mockStressLevels}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
@@ -235,33 +222,74 @@ export default function Dashboard() {
                       <Tooltip />
                       <Bar dataKey="niveau" fill="#0a3d62" />
                     </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white/80 backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-[#0a3d62]">Répartition des activités</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie data={mockActivitiesData} dataKey="value" cx="50%" cy="50%" outerRadius={80} fill="#0a3d62">
-                        {mockActivitiesData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
+                  } />
+                </div>
+                <ChartCard title="Répartition des activités" chart={
+                  <PieChart>
+                    <Pie data={mockActivitiesData} dataKey="value" cx="50%" cy="50%" outerRadius={80} fill="#0a3d62">
+                      {mockActivitiesData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                } />
+              </TabsContent>
+              <TabsContent value="productivity" className="space-y-4">
+                <ChartCard title="Productivité mensuelle" chart={
+                  <AreaChart data={mockProductivityData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="productivity" stroke="#82ca9d" fill="#82ca9d" />
+                  </AreaChart>
+                } />
+              </TabsContent>
+              <TabsContent value="engagement" className="space-y-4">
+                <ChartCard title="Engagement des employés" chart={
+                  <LineChart data={mockEngagementData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="engagement" stroke="#8884d8" strokeWidth={2} />
+                  </LineChart>
+                } />
+              </TabsContent>
+            </Tabs>
           </div>
-        </div>
+        </main>
       </div>
     </div>
-  );
+  )
 }
+
+function StatCard({ title, value, icon: Icon }) {
+  return (
+    <Card className="bg-white/80 backdrop-blur-md">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-[#3c6382]">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-[#0a3d62]" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-[#0a3d62]">{value}</div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ChartCard({ title, chart }) {
+  return (
+    <Card className="bg-white/80 backdrop-blur-md">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-[#0a3d62]">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={250}>
+          {chart}
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+} 

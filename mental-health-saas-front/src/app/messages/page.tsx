@@ -235,7 +235,7 @@ export default function EnhancedAnonymousMessages() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">TOUS</SelectItem>
-                    <SelectItem value="EN_COURS">EN COURS</SelectItem>
+                    <SelectItem value="EN COURS">EN COURS</SelectItem>
                     <SelectItem value="TRAITE">TRAITE</SelectItem>
                   </SelectContent>
                 </Select>
@@ -341,7 +341,7 @@ export default function EnhancedAnonymousMessages() {
         <SelectValue placeholder="Choisir un nouveau statut" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="EN_COURS">En Cours</SelectItem>
+        <SelectItem value="EN COURS">En Cours</SelectItem>
         <SelectItem value="TRAITE">Traité</SelectItem>
       </SelectContent>
     </Select>
